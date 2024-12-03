@@ -1,0 +1,177 @@
+/* Global Styles for the SignUp Component */
+/* * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+   */
+  .container {
+    display: flex;
+    justify-content: space-between;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .left-side {
+    width: 50%;
+    /* background: rgba(255, 255, 255, 0.7); Semi-transparent white */
+    backdrop-filter: blur(8px); /* Blurs the background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  
+  .wrapper {
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: #333;
+  }
+  
+  .input-box {
+    margin-bottom: 20px;
+    position: relative;
+  }
+  
+  .input-box input {
+    width: 100%;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    transition: border-color 0.3s;
+  }
+  
+  .input-box input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .error {
+    color: red;
+    font-size: 12px;
+    position: absolute;
+    bottom: -18px;
+    left: 0;
+  }
+  
+  .policy {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .policy h3 {
+    margin-left: 10px;
+  }
+  
+  .policy input {
+    transform: scale(1.2);
+  }
+  
+  .button input {
+    width: 100%;
+    padding: 15px;
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .button input:hover {
+    background-color: #0056b3;
+  }
+  
+  .text {
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .text a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .text a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Right Side (Welcome Text) */
+  .right-side {
+    width: 50%;
+    background: rgba(0, 123, 255, 0.7); /* Semi-transparent blue */
+    backdrop-filter: blur(8px); /* Blurs the background */
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+  
+  .right-side h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  
+  .right-side p {
+    font-size: 16px;
+    color: #e0e0e0;
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+  
+    .left-side, .right-side {
+      width: 100%;
+    }
+  
+    .right-side {
+      margin-top: 20px;
+    }
+  
+    .wrapper {
+      padding: 20px;
+    }
+  
+    h2 {
+      font-size: 24px;
+    }
+  
+    .input-box input {
+      padding: 12px;
+      font-size: 14px;
+    }
+  
+    .button input {
+      padding: 12px;
+      font-size: 16px;
+    }
+  
+    .right-side h1 {
+      font-size: 28px;
+    }
+  
+    .right-side p {
+      font-size: 14px;
+    }
+  }
+  
