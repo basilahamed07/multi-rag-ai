@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Paper, Grid } from '@mui/material';
+import { TextField, Button, Box, Typography, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -44,19 +44,17 @@ const SignUp = () => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        // Make the API call to register the user
         const response = await axios.post('http://localhost:5000/register', {
           username: formData.name,
           password: formData.password,
         });
 
-        // If registration is successful, navigate to the login page
         if (response.status === 201) {
           toast.success('Registration successful!', {
             position: 'top-right',
             duration: 5000,
           });
-          navigate('/login'); // Navigate to login page after successful registration
+          navigate('/login');
         }
       } catch (error) {
         if (error.response) {
@@ -80,22 +78,25 @@ const SignUp = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100vh', // Full screen height
-        width: '100vw', // Full screen width
-        background: 'linear-gradient(45deg, #2196F3, #9c27b0)', // Gradient background
+        height: '100vh',
+        width: '100vw',
+        background: 'linear-gradient(45deg, #2196F3, #9c27b0)',
       }}
     >
-      {/* Left side (Registration Form) */}
       <Paper
         sx={{
           padding: 4,
           width: '100%',
-          maxWidth: '600px', // Limit the width of the form
+          maxWidth: '600px',
           borderRadius: 3,
           boxShadow: 3,
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
           display: 'flex',
           flexDirection: 'column',
+          transition: 'transform 0.3s ease-in-out', // Smooth hover effect
+          '&:hover': {
+            transform: 'scale(1.05)', // Scale the form on hover
+          },
         }}
       >
         <Typography variant="h5" align="center" sx={{ color: '#fff', marginBottom: 4 }}>
@@ -113,7 +114,30 @@ const SignUp = () => {
             variant="outlined"
             error={Boolean(errors.name)}
             helperText={errors.name}
-            sx={{ background: 'rgba(255, 255, 255, 0.2)', borderRadius: 2 }}
+            sx={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: 2,
+              '& .MuiInputBase-input': {
+                color: 'white',
+              },
+              '& .MuiInputLabel-root': {
+                color: 'white',
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: 'white',
+              },
+            }}
+            InputProps={{
+              style: {
+                color: 'white',
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: 'white',
+              },
+            }}
+            placeholder="Enter your name"
           />
           <TextField
             label="Create Password"
@@ -126,7 +150,30 @@ const SignUp = () => {
             variant="outlined"
             error={Boolean(errors.password)}
             helperText={errors.password}
-            sx={{ background: 'rgba(255, 255, 255, 0.2)', borderRadius: 2 }}
+            sx={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: 2,
+              '& .MuiInputBase-input': {
+                color: 'white',
+              },
+              '& .MuiInputLabel-root': {
+                color: 'white',
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: 'white',
+              },
+            }}
+            InputProps={{
+              style: {
+                color: 'white',
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: 'white',
+              },
+            }}
+            placeholder="Enter password"
           />
           <TextField
             label="Confirm Password"
@@ -139,7 +186,30 @@ const SignUp = () => {
             variant="outlined"
             error={Boolean(errors.confirmPassword)}
             helperText={errors.confirmPassword}
-            sx={{ background: 'rgba(255, 255, 255, 0.2)', borderRadius: 2 }}
+            sx={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: 2,
+              '& .MuiInputBase-input': {
+                color: 'white',
+              },
+              '& .MuiInputLabel-root': {
+                color: 'white',
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: 'white',
+              },
+            }}
+            InputProps={{
+              style: {
+                color: 'white',
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: 'white',
+              },
+            }}
+            placeholder="Re-enter password"
           />
 
           <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
@@ -155,7 +225,11 @@ const SignUp = () => {
               I accept all terms & conditions
             </label>
           </Box>
-          {errors.acceptTerms && <span className="error" style={{ color: 'red' }}>{errors.acceptTerms}</span>}
+          {errors.acceptTerms && (
+            <span className="error" style={{ color: 'red' }}>
+              {errors.acceptTerms}
+            </span>
+          )}
 
           <Button
             type="submit"
@@ -170,13 +244,17 @@ const SignUp = () => {
                 backgroundColor: '#0097a7',
                 boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
               },
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)', // Add shadow for button
             }}
           >
             Register Now
           </Button>
 
           <Typography variant="body2" align="center" sx={{ color: '#fff', marginTop: 2 }}>
-            Already have an account? <a href="/login" style={{ color: '#00bcd4' }}>Login now</a>
+            Already have an account?{' '}
+            <a href="/login" style={{ color: '#00bcd4' }}>
+              Login now
+            </a>
           </Typography>
         </form>
       </Paper>

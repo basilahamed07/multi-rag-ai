@@ -36,7 +36,8 @@ def get_result(path,user_question,user_id,chat_bot):
 
 def generate_answer(result, user_question):
     groq_api_key = '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'
-    model = "llama3-groq-70b-8192-tool-use-preview"
+    # model = "llama3-groq-70b-8192-tool-use-preview"
+    model = "llama-3.1-70b-versatile"
     conversational_memory_length = 5
     memory = ConversationBufferWindowMemory(k=conversational_memory_length, memory_key="chat_history", return_messages=True)
     groq_chat = ChatGroq(

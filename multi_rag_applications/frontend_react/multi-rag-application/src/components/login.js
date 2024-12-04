@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Container, Paper } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { TextField, Button, Box, Typography, Paper } from '@mui/material';
+import { useNavigate } from 'react-router-dom';  // Import useNavigate hook
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -16,7 +16,7 @@ const SignIn = () => {
     password: '',
   });
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -44,6 +44,7 @@ const SignIn = () => {
         });
 
         if (response.status === 200) {
+          // Storing the access token, username, and userId in sessionStorage
           sessionStorage.setItem('access_token', response.data.access_token);
           sessionStorage.setItem('username', response.data.user.username);
           sessionStorage.setItem('userId', response.data.user.userId);
@@ -68,6 +69,10 @@ const SignIn = () => {
         }
       }
     }
+  };
+
+  const handleSignUpRedirect = () => {
+    navigate('/signup'); // Navigate to the signup page when clicked
   };
 
   return (
@@ -112,6 +117,25 @@ const SignIn = () => {
             sx={{
               background: 'rgba(255, 255, 255, 0.2)',  // Light background to make the input stand out
               borderRadius: 2,
+              '& .MuiInputBase-input': {
+                color: 'white', // White text color
+              },
+              '& .MuiInputLabel-root': {
+                color: 'white', // White label color
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: 'white', // White placeholder text
+              },
+            }}
+            InputProps={{
+              style: {
+                color: 'white', // White text inside the input field
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: 'white', // White label color
+              },
             }}
           />
           <TextField
@@ -128,6 +152,25 @@ const SignIn = () => {
             sx={{
               background: 'rgba(255, 255, 255, 0.2)',  // Light background
               borderRadius: 2,
+              '& .MuiInputBase-input': {
+                color: 'white', // White text color
+              },
+              '& .MuiInputLabel-root': {
+                color: 'white', // White label color
+              },
+              '& .MuiInputBase-input::placeholder': {
+                color: 'white', // White placeholder text
+              },
+            }}
+            InputProps={{
+              style: {
+                color: 'white', // White text inside the input field
+              },
+            }}
+            InputLabelProps={{
+              style: {
+                color: 'white', // White label color
+              },
             }}
           />
 
@@ -148,6 +191,22 @@ const SignIn = () => {
           >
             Sign In
           </Button>
+
+          <Box sx={{ textAlign: 'center', marginTop: 2 }}>
+            <Typography variant="body2" sx={{ color: 'white' }}>
+              Don't have an account?{' '}
+              <span
+                onClick={handleSignUpRedirect}  // Use handleSignUpRedirect on click
+                style={{
+                  color: '#00bcd4',
+                  cursor: 'pointer', // Indicate it's clickable
+                  textDecoration: 'none',
+                }}
+              >
+                Create one
+              </span>
+            </Typography>
+          </Box>
         </form>
       </Paper>
     </Box>

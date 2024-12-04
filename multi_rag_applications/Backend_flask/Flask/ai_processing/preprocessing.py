@@ -79,6 +79,15 @@ def pptx_load_and_chunk(path,text_splitter=text_splitter):
     return data
 
 
+#websote load
+from langchain_community.document_loaders import WebBaseLoader
+
+def web_side_load_chunk(query,text_splitter=text_splitter):
+    data = WebBaseLoader(query).load_and_split()
+    data = text_splitter.split_documents(data)
+    return data
+    
+
 
 # ------------------- it will return the chunked_data-sets -------------
 file_load_types = {

@@ -6,7 +6,7 @@ import os
 from werkzeug.utils import secure_filename
 from ai_processing.vector_store import embadding_and_store
 from ai_processing.retrive_process import get_result,generate_answer
-from ai_processing.preprocessing import file_load_types,wikidepid_summery,youtube_summery
+from ai_processing.preprocessing import file_load_types,wikidepid_summery,youtube_summery,web_side_load_chunk
 
 def get_file_details(file_id):
     file = File.query.filter_by(id=file_id).first()
@@ -97,13 +97,23 @@ def register_routes(app):
             return jsonify({'error': 'Invalid credentials'}), 401
         
         access_token = create_access_token(identity=user.id)
+        bot_info = "nil"
+        bots = Chat_bot.query.filter_by(user_id=user.id).first()
+        print(bots)
+        if bots :
+            bot_info="present"
+            print(bot_info)
+
+        # file_id = File.query.filter_by(filename=filename).first()
+        
         return jsonify({
             'message': 'Login successful',
             'access_token': access_token,
             'user': {
                 'username': user.username,
                 'userId': user.id,
-            }
+            },
+            "bot_info":bot_info
         }), 200
     
 # -------------------------------------------- end login and register-----------------------------------------
@@ -293,6 +303,90 @@ def register_routes(app):
         return jsonify({"message": "Bad request"}), 400
 
 
+# for websote chunking
+
+    @app.route("/website_bot", methods=["POST"])
+    @jwt_required()
+    def website_bot():
+        if request.method == 'POST':
+
+            # Get the text from the frontend (it should be sent as JSON or form data)
+            text = request.form.get('text', None)  # Ensure the key 'text' is in the request
+            bot_name = request.form.get('bot_name', None)  # Ensure the key 'text' is in the request
+            user_id = get_jwt_identity() 
+            # Validate if text is provided
+            if not text:
+                return jsonify({"message": "Text is required"}), 400
+
+            file_names_here="wikipedia_file"
+            file_name_save = "wikipedia"
+
+            
+            # Define the directory to store the txt file (you can change the path as needed)
+            file_directory = app.config["youtube_file"]  # Set this in your app config
+            if not os.path.exists(file_directory):
+                os.makedirs(file_directory)
+
+            # Generate a secure filename
+             # Get the current user's identity from JWT
+            filename = f"{"website"}_{bot_name}_{secure_filename('text_file.txt')}"
+
+            # Create the full path to the file
+            file_path = os.path.join(file_directory, filename)
+
+            # Write the text into the file
+            try:
+                with open(file_path, 'w') as f:
+                    f.write(text)
+                
+                
+                
+                data = web_side_load_chunk(query=text)
+                for trash in data:
+                    trash.metadata["user_id"] = user_id
+                    trash.metadata["chat_bot"] = bot_name
+                
+                # Embedding and storing the file (ensure the function works as expected)
+                embaddding_message = embadding_and_store(chuked=data,bot_name=bot_name)
+                print(embaddding_message)
+
+                 # Store the file information in the database
+                # Read the file content into a binary format (caution with large files)
+                with open(file_path, 'rb') as file:
+                    file_data = file.read()
+                        # Create a new File record and add it to the database
+                new_file = File(
+                    filename=filename,
+                    file_type='text/plain',  # You can modify this based on the actual file type
+                    file_data=file_data,
+                    user_id=user_id
+                )
+                db.session.add(new_file)
+                db.session.commit()
+                        # Fetch the newly added file's ID (you can skip this if not needed)
+                file_id = new_file.id
+                        # Create a new chatbot record in the database
+                new_chatbot = Chat_bot(
+                    bot_name=bot_name,
+                    user_id=user_id,
+                    file_id=file_id  # Assuming `file_id` is a foreign key reference
+                )
+                db.session.add(new_chatbot)
+                db.session.commit()
+                print(f"File record added to database: {new_file}")
+                return jsonify({"message": "File uploaded and bot created successfully"}), 200
+           
+
+            except Exception as e:
+                return jsonify({"message": f"An error occurred: {str(e)}"}), 500
+            
+
+        return jsonify({"message": "Bad request"}), 400
+
+
+
+
+
 
     # @app.route('/chat', methods=['GET', 'POST'])
     # @jwt_required()
@@ -351,7 +445,8 @@ def register_routes(app):
                     questions=user_question,  # store the question from the user
                     file_id=file_id.file_id,  # Read the file content (be cautious with large files)
                     user_id=user_id,
-                    Chat_bot_id=file_id.id
+                    Chat_bot_id=file_id.id,
+                    answer=responce
                 )
                 db.session.add(new_file)
                 db.session.commit()
@@ -367,20 +462,23 @@ def register_routes(app):
 
         return "error", 401
 
-    @app.route('/chat/history', methods=['GET'])
+    @app.route('/chat-history/<string:botName>', methods=['GET'])
     @jwt_required()
-    def get_chat_history():
+    def get_chat_history(botName):
         user_id = get_jwt_identity()  # Get the current user's ID from JWT
-        file_id = request.args.get('file_id', type=int)  # Get the file_id from query params
-
+        # bot_name = request.form.get('bot_name',None)  # Get the file_id from query params
         # Build the query to filter by both user_id and optionally file_id
-        if file_id:  # If file_id is provided, filter by file_id
-            history = AI_info.query.filter_by(user_id=user_id, file_id=file_id).all()
-        else:  # If no file_id, return all history for the user
-            history = AI_info.query.filter_by(user_id=user_id).all()
+        print(botName)
+        if botName:  # If file_id is provided, filter by file_id
+            chat_bot = Chat_bot.query.filter_by(bot_name=botName).first()
+            print(chat_bot)
+            if chat_bot:
+                history = AI_info.query.filter_by(Chat_bot_id=chat_bot.id).all()
+        # else:  # If no file_id, return all history for the user
+        # history = AI_info.query.filter_by(user_id=user_id).all()
 
         # Prepare the history data to include the question, answer, and file_id
-        history_data = [{'question': h.questions} for h in history]
+        history_data = [{'question': h.questions,"answer": h.answer} for h in history]
 
         return jsonify({'history': history_data})
     
