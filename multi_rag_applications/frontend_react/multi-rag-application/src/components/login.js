@@ -54,7 +54,7 @@ const SignIn = () => {
           });
 
           setTimeout(() => {
-            navigate('/select_bot');
+            navigate('/chat');
           }, 1000);
         }
       } catch (error) {

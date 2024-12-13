@@ -1,16 +1,105 @@
 import React, { useState, useEffect } from 'react';
 import { Button, TextField, Box, Typography, Modal, Collapse } from '@mui/material';
+import {  List, ListItem, ListItemText, IconButton, Divider } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone'; // Importing useDropzone
-import './Chat.css';  
+import DeleteIcon from '@mui/icons-material/Delete'
+// import './Cha  t.css';  
 
 // Importing Google Font (Roboto)
 import '@fontsource/roboto';
 
+
 const Chat = () => {
 
-  let apiEndpoint;
+  const handleDeleteBot = async () => {
+    // Retrieve the botName and JWT token from sessionStorage
+    const botName = sessionStorage.getItem('bot_name');  // Assuming 'bot_name' is the key
+    const accessToken = sessionStorage.getItem('access_token');  // Assuming 'access_token' is the key
+  
+    if (!botName) {
+      console.error('No bot name found in sessionStorage');
+      return;
+    }
+  
+    if (!accessToken) {
+      console.error('No access token found');
+      return;
+    }
+  
+    try {
+      // Sending the DELETE request with JWT in the Authorization header
+      const response = await axios.delete(`http://localhost:5000/delete-chatbot/${botName}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,  // Add the JWT token to the Authorization header
+        },
+      });
+  
+      // Handle successful response
+      console.log(response.data.message);  // You can customize this part as needed
+      setMessages([]);  // Clear the chat history on the client side if the delete was successful
+    } catch (error) {
+      // Handle error response
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        console.error('Error:', error.response.data.message);
+      } else if (error.request) {
+        // No response was received from the server
+        console.error('No response received:', error.request);
+      } else {
+        // Something went wrong in setting up the request
+        console.error('Error in request setup:', error.message);
+      }
+    }
+  };
+
+  const handleClearChat = async () => {
+    // Retrieve the botName and JWT token from sessionStorage
+    const botName = sessionStorage.getItem('bot_name');  // Assuming 'bot_name' is the key
+    const accessToken = sessionStorage.getItem('access_token');  // Assuming 'access_token' is the key
+  
+    if (!botName) {
+      console.error('No bot name found in sessionStorage');
+      return;
+    }
+  
+    if (!accessToken) {
+      console.error('No access token found');
+      return;
+    }
+  
+    try {
+      // Sending the DELETE request with JWT in the Authorization header
+      const response = await axios.delete(`http://localhost:5000/chat-history/${botName}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,  // Add the JWT token to the Authorization header
+        },
+      });
+  
+      // Handle successful response
+      console.log(response.data.message);  // You can customize this part as needed
+      setMessages([]);  // Clear the chat history on the client side if the delete was successful
+    } catch (error) {
+      // Handle error response
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        console.error('Error:', error.response.data.message);
+      } else if (error.request) {
+        // No response was received from the server
+        console.error('No response received:', error.request);
+      } else {
+        // Something went wrong in setting up the request
+        console.error('Error in request setup:', error.message);
+      }
+    }
+  };
+  
+
+
+  // let apiEndpoint;
 
   // Determine the API endpoint based on the selected optio
 
@@ -97,9 +186,9 @@ const handleWebsiteCreateBot = () => {
   const [input, setInput] = useState('');
   const [botSelectionError, setBotSelectionError] = useState(false);
 
-  const handleFileChange = (event) => {
-    setBotFile(event.target.files[0]);
-  };
+  // const handleFileChange = (event) => {
+  //   setBotFile(event.target.files[0]);
+  // };
 
 
   // Function to fetch chat history from the API
@@ -199,7 +288,7 @@ const handleWebsiteCreateBot = () => {
       return response.data.response || 'No response from bot';
     } catch (error) {
       console.error('Error fetching response from bot:', error);
-      return 'Error occurred while fetching response from bot';
+      return error.response.data.error;
     }
   };
 
@@ -216,10 +305,10 @@ const handleWebsiteCreateBot = () => {
     setInput('');
   };
 
-  const handleDelete = () => {
-    setMessages([]);
-    setInput('');
-  };
+  // const handleDelete = () => {
+  //   setMessages([]);
+  //   setInput('');
+  // };
 
   const handleBotSelection = (botName) => {
     setSelectedBot(botName);
@@ -248,17 +337,19 @@ const handleWebsiteCreateBot = () => {
       setBots([...bots, response.data]);
       setNewBotName(''); // Reset bot name
       setBotFile(null); // Reset file
-      setCreateBotModalOpen(false); // Close modal
+      setCreateBotModalOpen(false);
+      window.location.reload();  // Close modal
     })
+    
     .catch((error) => {
       console.error('Error creating bot:', error);
       alert('There was an error creating the bot.');
     });
   };
 
-  const handleAccountClick = () => {
-    navigate('/account');
-  };
+  // const handleAccountClick = () => {
+  //   navigate('/account');
+  // };
 
   const handleLogoutClick = () => {
     sessionStorage.clear();
@@ -280,16 +371,22 @@ const handleWebsiteCreateBot = () => {
         position: 'absolute', top: 15, width: '95%', height: '5%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         zIndex: 10, gap: 2, paddingLeft: 2, paddingRight: 2
       }}>
-        <Typography variant="h6" sx={{ color: 'black', fontFamily: 'Roboto' }}>
-          Selected Bot: {selectedBot || 'None'}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Typography variant="h6" sx={{ flex: 1, textAlign: 'center', color: 'black', fontFamily: 'Roboto' }}>
+          <Typography
+    variant="h6"
+    sx={{
+      color: selectedBot ? 'blue' : 'black',  // Change color if selectedBot has a value
+      fontFamily: 'Roboto'
+    }}
+  >
+    Selected Bot: {selectedBot || 'None'}
+  </Typography>
+        <Box sx={{ display: 'flex', gap: 10 }}>
+          <Typography variant="h6" sx={{ flex: 4, textAlign: 'center', color: 'black', fontFamily: 'Roboto' }}>
             Welcome, {userName}!
           </Typography>
-          <Button onClick={handleAccountClick} sx={{ borderRadius: '20px', padding: '10px', backgroundColor: '#3a80ff', boxShadow: 2, fontFamily: 'Roboto' }} variant="contained">
+          {/* <Button onClick={handleAccountClick} sx={{ borderRadius: '20px', padding: '10px', backgroundColor: '#3a80ff', boxShadow: 2, fontFamily: 'Roboto' }} variant="contained">
             Account
-          </Button>
+          </Button> */}
           <Button onClick={handleLogoutClick} sx={{ borderRadius: '20px', padding: '10px', backgroundColor: '#ff3a3a', boxShadow: 2, fontFamily: 'Roboto' }} variant="contained">
             Logout
           </Button>
@@ -298,43 +395,57 @@ const handleWebsiteCreateBot = () => {
 
       {/* Bot List */}
       <Box sx={{
-        width: isBotListOpen ? '20%' : '0', transition: 'width 0.3s ease-in-out', overflow: 'hidden', backgroundColor: '#f5f5f5', padding: 2,
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', borderRadius: 2, border: '1px solid #ddd', marginTop: '5%',
-      }}>
-        {/* <Button
-          onClick={() => setIsBotListOpen(!isBotListOpen)}
+  width: isBotListOpen ? '20%' : '0', transition: 'width 0.3s ease-in-out', overflow: 'hidden', backgroundColor: '#f5f5f5', padding: 2,
+  display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', borderRadius: 2, border: '1px solid #ddd', marginTop: '5%',
+}}>
+  {/* <Button onClick={() => setIsBotListOpen(!isBotListOpen)} sx={{ marginBottom: 2, backgroundColor: '#3a80ff', color: '#fff', borderRadius: '20px', boxShadow: 2, '&:hover': { backgroundColor: '#2a5ecf' }, fontFamily: 'Roboto' }} >{isBotListOpen ? 'Hide Bots' : 'Show Bots'}</Button> */}
+  <Collapse in={isBotListOpen}>
+    <List sx={{ padding: 0 }}>
+      {bots.map((bot) => (
+        <ListItem
+          key={bot.file_id}
           sx={{
-            marginBottom: 2, backgroundColor: '#3a80ff', color: '#fff', borderRadius: '20px', boxShadow: 2,
-            '&:hover': { backgroundColor: '#2a5ecf' }, fontFamily: 'Roboto'
+            backgroundColor: selectedBot === bot.bot_name ? '#3a80ff' : 'transparent',
+            color: selectedBot === bot.bot_name ? '#fff' : 'black',
+            borderRadius: '20px',
+            boxShadow: 2,
+            marginBottom: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            fontFamily: 'Roboto',
+            padding: '8px 16px',
           }}
         >
-          {/* {isBotListOpen ? 'Hide Bots' : 'Show Bots'} */}
-        {/* </Button> */}
-        <Collapse in={isBotListOpen}>
-          {bots.map((bot) => (
-            <Button
-              key={bot.file_id}
-              onClick={() => handleBotSelection(bot.bot_name)}
-              variant="outlined"
-              sx={{
-                marginBottom: 2, backgroundColor: selectedBot === bot.bot_name ? '#3a80ff' : 'transparent',
-                color: selectedBot === bot.bot_name ? '#fff' : 'black', borderRadius: '20px', boxShadow: 2, fontFamily: 'Roboto'
-              }}
-            >
-              {bot.bot_name}
-            </Button>
-          ))}
-          <Button
-            onClick={() => setCreateBotModalOpen(true)}
-            variant="outlined"
+          <ListItemText
+            primary={bot.bot_name}
+            onClick={() => handleBotSelection(bot.bot_name)}
+            sx={{ cursor: 'pointer' }}
+          />
+          <IconButton
+            onClick={() => handleDeleteBot(bot.file_id)}
             sx={{
-              marginTop: 2, backgroundColor: '#28a745', color: '#fff', borderRadius: '20px', boxShadow: 2, fontFamily: 'Roboto'
+              color: selectedBot === bot.bot_name ? '#fff' : 'black',
+              '&:hover': { color: 'red' },
             }}
           >
-            Create Bot
-          </Button>
-        </Collapse>
-      </Box>
+            <DeleteIcon />
+          </IconButton>
+        </ListItem>
+      ))}
+    </List>
+    <Divider />
+    <Button
+      onClick={() => setCreateBotModalOpen(true)}
+      variant="outlined"
+      sx={{
+        marginTop: 2, backgroundColor: '#28a745', color: '#fff', borderRadius: '20px', boxShadow: 2, fontFamily: 'Roboto'
+      }}
+    >
+      Create Bot
+    </Button>
+  </Collapse>
+</Box>
 
       {/* Modal for Create Bot */}
       <Modal
@@ -378,7 +489,7 @@ const handleWebsiteCreateBot = () => {
       >
         Files
       </Button>
-      <Button
+      {/* <Button
         variant={selectedOption === 'wikipedia' ? 'contained' : 'outlined'}
         onClick={handleWikipediaClick} // Trigger the Wikipedia handler
         sx={{ flex: 1 }}
@@ -391,7 +502,7 @@ const handleWebsiteCreateBot = () => {
         sx={{ flex: 1 }}
       >
         Websites
-      </Button>
+      </Button> */}
     </Box>
 
     <Box
@@ -483,25 +594,35 @@ const handleWebsiteCreateBot = () => {
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <TextField
-          variant="outlined"
-          fullWidth
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-          sx={{ borderRadius: '20px' }}
-        />
-        <Button
-          onClick={handleSendMessage}
-          variant="contained"
-          sx={{
-            marginLeft: 2, backgroundColor: '#28a745', color: 'white', borderRadius: '20px',
-            boxShadow: 2, '&:hover': { backgroundColor: '#218c3c' }
-          }}
-        >
-          Send
-        </Button>
-      </Box>
+  <TextField
+    variant="outlined"
+    fullWidth
+    value={input}
+    onChange={(e) => setInput(e.target.value)}
+    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+    sx={{ borderRadius: '20px' }}
+  />
+  <Button
+    onClick={handleSendMessage}
+    variant="contained"
+    sx={{
+      marginLeft: 2, backgroundColor: '#28a745', color: 'white', borderRadius: '20px',
+      boxShadow: 2, '&:hover': { backgroundColor: '#218c3c' }
+    }}
+  >
+    Send
+  </Button>
+  <Button
+    onClick={handleClearChat}  // Function to clear the chat
+    variant="contained"
+    sx={{
+      marginLeft: 2, backgroundColor: '#dc3545', color: 'white', borderRadius: '20px',
+      boxShadow: 2, '&:hover': { backgroundColor: '#c82333' }
+    }}
+  >
+    Clear
+  </Button>
+</Box>
     </Box>
     </div>
   );

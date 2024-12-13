@@ -424,43 +424,40 @@ def register_routes(app):
 
             # Get question from form data; default if not present
             user_question = request.form.get('question', "No question provided")
-            chat_bot = request.form.get('bot_name', "No question provided")
+            chat_bot = request.form.get('bot_name')
+            print(chat_bot)
             if user_question == "No question provided":
                 return jsonify({'error': 'Question is required'}), 400
+            if chat_bot == "null":
+                return jsonify({'error': 'select the bot or create the bot!!!'}), 400
             
 
 
             # Call the get_result function to get the answer
-            try:
-                result = get_result(vector_path, user_question,user_id,chat_bot)
-
-                responce = generate_answer(result, user_question)
-
-                # filter get the file_id by filer by cht_bot
-                file_id = Chat_bot.query.filter_by(bot_name=chat_bot).first()
-
-
-                # Create a new File record and add it to the database
-                new_file = AI_info(
-                    questions=user_question,  # store the question from the user
-                    file_id=file_id.file_id,  # Read the file content (be cautious with large files)
-                    user_id=user_id,
-                    Chat_bot_id=file_id.id,
-                    answer=responce
-                )
-                db.session.add(new_file)
-                db.session.commit()
-                print(f"File record added to database: {new_file}")
-
-                return jsonify({'response': responce})
+            file_id = Chat_bot.query.filter_by(bot_name=chat_bot).first()
+            result = get_result(vector_path, user_question,user_id,chat_bot)
+            print("from anseer:", result)
+            responce = generate_answer(result, user_question)
+            # filter get the file_id by filer by cht_bot
+            
+            # Create a new File record and add it to the database
+            new_file = AI_info(
+                questions=user_question,  # store the question from the user
+                file_id=file_id.file_id,  # Read the file content (be cautious with large files)
+                user_id=user_id,
+                Chat_bot_id=file_id.id,
+                answer=responce
+            )
+            db.session.add(new_file)
+            db.session.commit()
+            print(f"File record added to database: {new_file}")
+            return jsonify({'response': responce})
 
 
-            except Exception as e:
-            # In case of any error, return a 500 error with the error message
-                print(f"Error: {e}")
-                return jsonify({'error': str(e)}), 500
+            
 
         return "error", 401
+
 
     @app.route('/chat-history/<string:botName>', methods=['GET'])
     @jwt_required()
@@ -478,10 +475,76 @@ def register_routes(app):
         # history = AI_info.query.filter_by(user_id=user_id).all()
 
         # Prepare the history data to include the question, answer, and file_id
-        history_data = [{'question': h.questions,"answer": h.answer} for h in history]
-
+        try:
+            history_data = [{'question': h.questions,"answer": h.answer} for h in history]
+        except:
+            history_data = []
         return jsonify({'history': history_data})
     
+
+    # for delete the chat-hstory
+    @app.route('/chat-history/<string:botName>', methods=['DELETE'])
+    @jwt_required()
+    def delete_chat_history(botName):
+        # Retrieve the Chat_bot by bot_name
+        chat_bot = Chat_bot.query.filter_by(bot_name=botName).first()
+
+        # If the Chat_bot with the given botName doesn't exist
+        if not chat_bot:
+            return jsonify({"message": "Chat bot not found"}), 404
+
+        # Now filter the AI_info table to find records with the matching Chat_bot_id
+        records_to_delete = AI_info.query.filter_by(Chat_bot_id=chat_bot.id).all()
+
+        # If no records are found for this Chat_bot_id
+        if not records_to_delete:
+            return jsonify({"message": "No chat history found for this ChatBot"}), 404
+
+        # Try to delete the records
+        try:
+            for record in records_to_delete:
+                db.session.delete(record)  # Delete each record
+            db.session.commit()  # Commit the transaction
+            return jsonify({"message": f"Successfully deleted {len(records_to_delete)} record(s) for ChatBot: {botName}"}), 200
+        except Exception as e:
+            db.session.rollback()  # Rollback if there's an error
+            return jsonify({"message": f"Error deleting records: {str(e)}"}), 500
+
+            # for delete the chat-bot
+    @app.route('/delete-chatbot/<string:botName>', methods=['DELETE'])
+    @jwt_required()
+    def delete_chat_bot(botName):
+        # Retrieve the Chat_bot by bot_name
+        chat_bot = Chat_bot.query.filter_by(bot_name=botName).first()
+        print("inside the deite")
+        # If the Chat_bot with the given botName doesn't exist
+        if not chat_bot:
+            return jsonify({"message": "Chat bot not found"}), 404
+
+        # Now filter the AI_info table to find records with the matching Chat_bot_id
+        records_to_ai_info = AI_info.query.filter_by(Chat_bot_id=chat_bot.id).all()
+        record_to_chat_bot = Chat_bot.query.filter_by(id=chat_bot.id).all()
+        print(records_to_ai_info,record_to_chat_bot)
+        # If no records are found for this Chat_bot_id
+        if not record_to_chat_bot:
+            return jsonify({"message": "No chat history found for this ChatBot"}), 404
+
+        # Try to delete the records
+        try:
+            for record in records_to_ai_info:
+                db.session.delete(record)  # Delete each record
+            db.session.commit()
+            
+            for record in record_to_chat_bot:
+                db.session.delete(record)  # Delete each record
+            db.session.commit()
+              # Commit the transaction
+            return jsonify({"message": f"Successfully deleted {len(records_to_ai_info)} record(s) for ChatBot: {botName}"}), 200
+        except Exception as e:
+            db.session.rollback()  # Rollback if there's an error
+            return jsonify({"message": f"Error deleting records: {str(e)}"}), 500
+
+
     @app.route('/bots', methods=['GET'])
     @jwt_required()
     def get_bot():
